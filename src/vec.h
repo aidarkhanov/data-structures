@@ -1,105 +1,139 @@
 #ifndef VEC_H
 #define VEC_H
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 #ifndef VEC_ASSERT
-	#define VEC_ASSERT(x) assert(x)
+    #define VEC_ASSERT(x) assert(x)
 #endif
 
 #ifndef VEC_MALLOC
-	#define VEC_MALLOC(sz) malloc(sz)
+    #define VEC_MALLOC(sz) malloc(sz)
+#endif
+
+#ifndef VEC_REALLOC
+    #define VEC_REALLOC(ptr, sz) realloc((ptr), (sz))
 #endif
 
 #ifndef VEC_FREE
-	#define VEC_FREE(ptr) free(ptr)
+    #define VEC_FREE(ptr) free(ptr)
 #endif
 
-typedef struct {
-	int *array;
-	size_t size;
-	size_t capacity;
-} Vec;
+typedef struct Vec Vec;
 
-void init_vec(Vec *vec, size_t capacity);
-void free_vec(Vec *vec);
+Vec *vec_new(size_t capacity);
+void vec_free(Vec **vec);
+void vec_fit(Vec *vec);
+void vec_append(Vec *vec, int value);
+void vec_delete(Vec *vec, size_t index);
+static inline int    vec_at(const Vec *vec, ptrdiff_t index);
+static inline size_t vec_size(const Vec *vec);
+static inline size_t vec_capacity(const Vec *vec);
 
-void append(Vec *vec, int element);
-void delete_element(Vec *vec, size_t index);
-int get_element(const Vec *vec, size_t index);
-void resize_vec(Vec *vec, size_t new_capacity);
-size_t size(const Vec *vec);
-size_t capacity(const Vec *vec);
+#define vec_ptr(vec) ((int *)((vec)->data))
 
 #ifdef VEC_IMPLEMENTATION
 
-#include <assert.h>
 #include <string.h>
 
-void init_vec(Vec *vec, size_t capacity)
+struct Vec {
+    size_t size;
+    size_t capacity;
+    int *data;
+};
+
+Vec *vec_new(size_t capacity)
 {
-	vec->array = (int *)VEC_MALLOC(capacity * sizeof(int));
-	VEC_ASSERT(vec->array != NULL);
-	vec->size = 0;
-	vec->capacity = capacity;
+    Vec *vec = (Vec *)VEC_MALLOC(sizeof(Vec));
+    VEC_ASSERT(vec != nullptr);
+
+	vec->data = (int *)VEC_MALLOC(capacity * sizeof(int));
+	VEC_ASSERT(vec->data != nullptr);
+
+    vec->size = 0;
+    vec->capacity = capacity;
+
+    return vec;
 }
 
-void free_vec(Vec *vec)
+void vec_free(Vec **vec)
 {
-	VEC_FREE(vec->array);
-	vec->array = NULL;
-	vec->size = 0;
-	vec->capacity = 0;
+	VEC_ASSERT(vec != nullptr && *vec != nullptr);
+
+	VEC_FREE((*vec)->data);
+	VEC_FREE(*vec);
+	*vec = nullptr;
 }
 
-void append(Vec *vec, int element)
+void vec_fit(Vec *vec)
 {
-	if (vec->size == vec->capacity)
-		resize_vec(vec, vec->capacity * 2);
+	if (vec->size < vec->capacity) {
+		int *new_data = (int *)VEC_REALLOC(vec->data, vec->size * sizeof(int));
+		VEC_ASSERT(new_data != nullptr);
 
-	vec->array[vec->size++] = element;
-}
-
-void delete_element(Vec *vec, size_t index)
-{
-	if (index < vec->size) {
-		memmove(
-			&vec->array[index],
-			&vec->array[index+1],
-			(vec->size - index - 1) * sizeof(int)
-		);
-		
-		--vec->size;
+		vec->data = new_data;
+		vec->capacity = vec->size;
 	}
 }
 
-int get_element(const Vec *vec, size_t index)
+void vec_append(Vec *vec, int value)
 {
-	VEC_ASSERT(index < vec->size);
-	return vec->array[index];
+	if (vec->size >= vec->capacity) {
+		size_t new_capacity = vec->capacity > 0 ? vec->capacity : 1;
+		new_capacity += (vec->capacity < 64) ? vec->capacity : 64;
+
+		int *new_data = (int *)VEC_REALLOC(vec->data, new_capacity * sizeof(int));
+		VEC_ASSERT(new_data != nullptr);
+
+		vec->data = new_data;
+		vec->capacity = new_capacity;
+	}
+
+    vec->data[vec->size++] = value;
 }
 
-void resize_vec(Vec *vec, size_t new_capacity)
+void vec_delete(Vec *vec, size_t index)
 {
-	int *new_array = (int *)VEC_MALLOC(new_capacity * sizeof(int));
-	VEC_ASSERT(new_array != NULL);
-	memcpy(new_array, vec->array, vec->size * sizeof(int));
-	VEC_FREE(vec->array);
-	vec->array = new_array;
-	vec->capacity = new_capacity;
+	VEC_ASSERT(vec != nullptr && index < vec->size);
+
+	// Optimization 1: if empty vector, do nothing.
+	if (vec->size == 0)
+		return;
+
+	// Optimization 2: if not deleting the last element, move memory.
+	if (index < vec->size - 1)
+		memmove(
+			&vec->data[index],
+			&vec->data[index + 1],
+			(vec->size - index - 1) * sizeof(int)
+		);
+
+	vec->size--;
 }
 
-size_t size(const Vec *vec)
+static inline int vec_at(const Vec *vec, ptrdiff_t index)
+{
+	// If index is negative, wrap around to the end of the vector.
+	if (index < 0)
+		index += vec->size;
+
+    VEC_ASSERT(index >= 0 && (size_t) index < vec->size);
+
+	return vec->data[index];
+}
+
+static inline size_t vec_size(const Vec *vec)
 {
 	return vec->size;
 }
 
-size_t capacity(const Vec *vec)
+static inline size_t vec_capacity(const Vec *vec)
 {
 	return vec->capacity;
 }
 
-#endif
+#endif // VEC_IMPLEMENTATION
 
-#endif
+#endif // VEC_H
