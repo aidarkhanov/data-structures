@@ -12,9 +12,9 @@
 <p align="center">Educational implementations of three basic data<br>
 structures in the C programming language.</p>
 
-1) Vector (dynamic array),
-3) Hash Map, 
-2) Set.
+1) [Vector (Dynamic Array)](#vector-dynamic-array),
+2) [Hash Map](#hash-map), 
+3) [Set](#set).
 
 ### Purpose
 
