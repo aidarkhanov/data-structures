@@ -4,17 +4,21 @@
 #include <stdio.h>
 
 int main() {
-    int *my_vector = vec_new(); // Create a new vector.
-    
-    vec_push(my_vector, 10); // Append an element.
-    vec_push(my_vector, 20); // Append another element.
-   
-	int value = my_vector[0];
-    // int value = vec_get(my_vector, 0); // Get the first element.
-	printf("%d\n", value);
-    
-    vec_delete(my_vector, 1); // Delete the second element.
-    
-    vec_free(my_vector); // Free the vector.
-    return 0;
+	// Create a new vector with an initial capacity of 4 integers.
+	Vec *my_vec = vec_new(4);
+
+	// Push new elements into the vector.
+	for (int i = 0; i < 10; ++i) {
+		vec_push(my_vec, i * i);
+	}
+
+	// Access elements by index.
+	printf("Element at index 5: %d\n", vec_at(my_vec, 5));
+
+	// Delete element at index 3.
+	vec_delete(my_vec, 3);
+
+	// Free the vector when done.
+	vec_free(my_vec);
+	return 0;
 }

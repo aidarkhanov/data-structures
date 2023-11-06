@@ -45,6 +45,8 @@ Usage:
 	#define VEC_IMPLEMENTATION
 	#include "vec.h"
 
+	#include <stdio.h>
+
 	int main() {
 		// Create a new vector with an initial capacity of 4 integers.
 		Vec *my_vec = vec_new(4);
@@ -90,7 +92,7 @@ int vec_at(const Vec *vec, size_t index);
 size_t vec_size(const Vec *vec);
 size_t vec_capacity(const Vec *vec);
 
-#ifndef VEC_IMPLEMENTATION
+#ifdef VEC_IMPLEMENTATION
 
 // Internal utility functions
 static inline void *_realloc(void *ptr, size_t new_size) {
