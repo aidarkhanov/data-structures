@@ -4,13 +4,13 @@
     <img src="/images/data-structures-icon.svg"
          alt="Data Structures icon"
          align="center" height="80" height="80">
-    <br><br>Data Structures
+    <br>Data Structures
 </p>
 
 </h1>
 
-This repository provides educational implementations of three basic data
-structures in the C programming language:
+<p align="center">Educational implementations of three basic data<br>
+structures in the C programming language.</p>
 
 1) Vector (dynamic array),
 3) Hash Map, 
