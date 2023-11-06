@@ -4,19 +4,17 @@
     <img src="/images/data-structures-icon.svg"
          alt="Data Structures icon"
          align="center" height="80" height="80">
-    <br>Data Structures
+    <br><br>Data Structures
 </p>
 
 </h1>
-
-<p align="center">Data Structures in C</p>
 
 This repository provides educational implementations of three basic data
 structures in the C programming language:
 
 1) Vector (dynamic array),
-3) A hash map, 
-2) and a set.
+3) Hash Map, 
+2) Set.
 
 ### Purpose
 
@@ -41,6 +39,12 @@ to integrate it into a project, and example code.
 The [`vec.h`](/vec.h) file contains a minimal implementation of a dynamic
 array, also known as a vector. It allows for the storage and manipulation of an
 array of integers with the ability to dynamically resize itself.
+
+### Hash Map
+
+The [`hmap.h`](/hmap.h) file demonstrates a basic hash map (or hash table)
+implementation. This data structure provides efficient data retrieval through
+key-value pairs and hashing to handle different types of data.
 
 ### Set
 
