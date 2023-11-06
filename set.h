@@ -2,11 +2,12 @@
 	set.h — A simple, educational set implementation based on dynamic arrays.
 
 Overview:
-	set.h offers a minimalistic set for educational purposes and small projects. It supports
-	basic set operations such as creation, destruction, addition, and membership checking.
+	set.h offers a minimalistic set for educational purposes and small
+	projects. It supports basic set operations such as creation, destruction,
+	addition, and membership checking.
 
-	This implementation uses a basic dynamic array to store unique elements. Error checking 
-	is performed using assertions to aid in learning.
+	This implementation uses a basic dynamic array to store unique elements.
+	Error checking is performed using assertions to aid in learning.
 
 Usage:
 	```c
@@ -25,7 +26,10 @@ Usage:
 		}
 
 		// Check for element's membership.
-		printf("Does 16 belong to the set? %s\n", set_contains(my_set, 16) ? "Yes" : "No");
+		printf("Does 16 belong to the set? %s\n",
+			set_contains(my_set, 16)
+				? "Yes"
+				: "No");
 
 		// Remove element 9 from the set.
 		set_remove(my_set, 9);
@@ -103,7 +107,9 @@ void set_add(Set *set, int item) {
 void set_remove(Set *set, int item) {
 	for (size_t i = 0; i < set->size; ++i) {
 		if (set->items[i] == item) {
-			memmove(&set->items[i], &set->items[i + 1], (set->size - i - 1) * sizeof(int));
+			memmove(&set->items[i],     // dst
+					&set->items[i + 1], // src
+					(set->size - i - 1) * sizeof(int));
 			--set->size;
 			break;
 		}

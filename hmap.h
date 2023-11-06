@@ -21,8 +21,9 @@ Hash Function:
 Collision resolution:
 	This hash map uses separate chaining for collision resolution. Each bucket
 	in the hash map is the head of a linked list. When a collision occurs, the
-	new entry is added to the corresponding list. This method is straightforward
-	and allows the hash table to remain efficient even with a high load factor.
+	new entry is added to the corresponding list. This method is
+	straightforward and allows the hash table to remain efficient even with a
+	high load factor.
 
 Usage:
 	```c
@@ -56,9 +57,9 @@ Usage:
 	```
 
 	Note: This code does not handle string duplications for keys and values,
-	and it assumes that the lifetime of strings passed to the functions outlives
-	the hash map usage. Proper string handling should be added for a more robust
-	implementation.
+	and it assumes that the lifetime of strings passed to the functions
+	outlives the hash map usage. Proper string handling should be added for a
+	more robust implementation.
 */
 
 #ifndef HMAP_H
@@ -102,7 +103,9 @@ HashMap *hmap_new(size_t initial_buckets) {
 	assert(map);
 
 	map->bucket_count = initial_buckets;
-	map->buckets = (HashMapEntry **)calloc(initial_buckets, sizeof(HashMapEntry *));
+	map->buckets = (HashMapEntry **)calloc(
+		initial_buckets,
+		sizeof(HashMapEntry *));
 	assert(map->buckets);
 
 	return map;

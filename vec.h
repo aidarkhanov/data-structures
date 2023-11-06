@@ -137,7 +137,9 @@ void vec_push(Vec *vec, int value) {
 void vec_delete(Vec *vec, size_t index) {
 	assert(vec && index < vec->size);
 
-	memmove(&vec->data[index], &vec->data[index + 1], (vec->size - index - 1) * sizeof(int));
+	memmove(&vec->data[index],     // dst
+			&vec->data[index + 1], // src
+			(vec->size - index - 1) * sizeof(int));
 	--vec->size;
 }
 

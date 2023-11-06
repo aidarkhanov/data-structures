@@ -9,8 +9,7 @@
 
 </h1>
 
-<p align="center">Educational implementations of three basic data<br>
-structures in the C programming language.</p>
+<p align="center">Educational implementations of data structures in C.</p>
 
 1) [Vector (Dynamic Array)](#vector-dynamic-array),
 2) [Hash Map](#hash-map), 
