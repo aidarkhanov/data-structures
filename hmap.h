@@ -158,7 +158,7 @@ void hmap_insert(HashMap *map, char *key, char *value) {
 void hmap_delete(HashMap *map, char *key) {
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
-	HashMapEntry *prev = nullptr;
+	HashMapEntry *prev = NULL;
 
 	while (entry) {
 		if (strcmp(entry->key, key) == 0) {
@@ -185,7 +185,7 @@ char *hmap_get(HashMap *map, char *key) {
 		}
 		entry = entry->next;
 	}
-	return nullptr;  // Key not found
+	return NULL;  // Key not found
 }
 
 #endif // HMAP_IMPLEMENTATION
