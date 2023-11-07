@@ -87,7 +87,7 @@ typedef struct {
 } HashMap;
 
 // Function prototypes
-HashMap *hashmap_new(size_t initial_buckets);
+HashMap *hmap_new(size_t initial_buckets);
 void hmap_free(HashMap *map);
 void hmap_insert(HashMap *map, char *key, char *value);
 void hmap_delete(HashMap *map, char *key);
