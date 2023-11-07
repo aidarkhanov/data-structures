@@ -89,36 +89,42 @@ typedef struct {
 // Function prototypes
 HashMap *hmap_new(size_t initial_buckets);
 void hmap_free(HashMap *map);
-void hmap_insert(HashMap *map, char *key, char *value);
-void hmap_delete(HashMap *map, char *key);
-char *hmap_get(HashMap *map, char *key);
-size_t hmap_hash(char *key, size_t bucket_count);
+int hmap_insert(HashMap *map, const char *key, const char *value);
+int hmap_delete(HashMap *map, const char *key);
+char *hmap_get(HashMap *map, const char *key);
+size_t hmap_hash(const char *key, size_t bucket_count);
 
 #ifdef HMAP_IMPLEMENTATION
 
 // Function implementations
-
 HashMap *hmap_new(size_t initial_buckets) {
+	if (initial_buckets == 0) return NULL;
+
 	HashMap *map = (HashMap *)malloc(sizeof(HashMap));
-	assert(map);
+	if (!map) return NULL;
 
 	map->bucket_count = initial_buckets;
 	map->buckets = (HashMapEntry **)calloc(
 		initial_buckets,
 		sizeof(HashMapEntry *));
-	assert(map->buckets);
+	if (!map->buckets) {
+		free(map);
+		return NULL;
+	}
 
 	return map;
 }
 
 void hmap_free(HashMap *map) {
-	assert(map);
+	if (!map) return;
 
 	for (size_t i = 0; i < map->bucket_count; ++i) {
 		HashMapEntry *entry = map->buckets[i];
 		while (entry) {
 			HashMapEntry *next = entry->next;
-			free(entry);  // Assumes keys and values are managed outside
+			free(entry->key);
+			free(entry->value);
+			free(entry);
 			entry = next;
 		}
 	}
@@ -127,38 +133,55 @@ void hmap_free(HashMap *map) {
 	free(map);
 }
 
-size_t hmap_hash(char *key, size_t bucket_count) {
+size_t hmap_hash(const char *key, size_t bucket_count) {
 	size_t hash = 0;
 	while (*key) {
-		hash = (hash * 31) + *(key++);  // A simple hash function
+		hash = (hash * 31) + *(key++);
 	}
 	return hash % bucket_count;
 }
 
-void hmap_insert(HashMap *map, char *key, char *value) {
+// Returns 0 if insertion is successful, -1 otherwise.
+int hmap_insert(HashMap *map, const char *key, const char *value) {
+	if (!map || !key || !value) return -1;
+
+	char *dup_key = strdup(key);
+	if (!dup_key) return -1;
+
+	char *dup_value = strdup(value);
+	if (!dup_value) { free(dup_key); return -1; }
+
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
 
 	// Check if the key already exists and update the value
 	while (entry) {
-		if (strcmp(entry->key, key) == 0) {
-			entry->value = value;
-			return;
+		if (strcmp(entry->key, dup_key) == 0) {
+			free(entry->key);
+			free(entry->value);
+			entry->key = dup_key;
+			entry->value = dup_value;
+			return 0;
 		}
 		entry = entry->next;
 	}
 
 	// Key does not exist, create a new entry
 	HashMapEntry *new_entry = (HashMapEntry *)malloc(sizeof(HashMapEntry));
-	assert(new_entry);
+	if (!new_entry) { free(dup_key); free(dup_value); return -1; }
 
-	new_entry->key = key;
-	new_entry->value = value;
+	new_entry->key = dup_key;
+	new_entry->value = dup_value;
 	new_entry->next = map->buckets[index];
 	map->buckets[index] = new_entry;
+
+	return 0;
 }
 
-void hmap_delete(HashMap *map, char *key) {
+// Returns 0 if deletion is successful, -1 otherwise.
+int hmap_delete(HashMap *map, const char *key) {
+	if (!map || !key) return -1;
+
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
 	HashMapEntry *prev = NULL;
@@ -170,15 +193,22 @@ void hmap_delete(HashMap *map, char *key) {
 			} else {
 				map->buckets[index] = entry->next;
 			}
-			free(entry);  // Assumes keys and values are managed outside
-			return;
+			free(entry->key);
+			free(entry->value);
+			free(entry);
+			return 0; // Entry is found and deleted using key.
 		}
 		prev = entry;
 		entry = entry->next;
 	}
+
+	return -1;
 }
 
-char *hmap_get(HashMap *map, char *key) {
+// Return string value if successful, NULL otherwise.
+char *hmap_get(HashMap *map, const char *key) {
+	if (!map || !key) return NULL;
+
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
 
@@ -188,7 +218,8 @@ char *hmap_get(HashMap *map, char *key) {
 		}
 		entry = entry->next;
 	}
-	return NULL;  // Key not found
+	
+	return NULL;
 }
 
 #endif // HMAP_IMPLEMENTATION
