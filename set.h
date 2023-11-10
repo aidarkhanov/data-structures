@@ -44,27 +44,25 @@ Usage:
 #define SET_H
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-// The set structure
 typedef struct {
 	size_t size;
 	size_t capacity;
 	int *items;
 } Set;
 
-// Prototypes
 Set *set_new();
 void set_free(Set *set);
 void set_add(Set *set, int item);
 void set_remove(Set *set, int item);
-int set_contains(const Set *set, int item);
+bool set_contains(const Set *set, int item);
 
 #ifdef SET_IMPLEMENTATION
 
-// Internal utility functions
 static void set_resize(Set *set, size_t new_capacity) {
 	int *new_items = realloc(set->items, new_capacity * sizeof(int));
 	assert(new_items);
@@ -75,7 +73,9 @@ static void set_resize(Set *set, size_t new_capacity) {
 
 static void set_grow(Set *set) {
 	if (set->size == set->capacity) {
-		size_t new_capacity = set->capacity ? set->capacity * 2 : 1;
+		size_t new_capacity = set->capacity
+			? (size_t)((float)set->capacity * 1.5)
+			: 1;
 		set_resize(set, new_capacity);
 	}
 }
@@ -93,11 +93,14 @@ Set *set_new() {
 
 void set_free(Set *set) {
 	assert(set);
+
 	free(set->items);
 	free(set);
 }
 
 void set_add(Set *set, int item) {
+	assert(set);
+
 	if (!set_contains(set, item)) {
 		set_grow(set);
 		set->items[set->size++] = item;
@@ -105,6 +108,8 @@ void set_add(Set *set, int item) {
 }
 
 void set_remove(Set *set, int item) {
+	assert(set);
+
 	for (size_t i = 0; i < set->size; ++i) {
 		if (set->items[i] == item) {
 			memmove(&set->items[i],     // dst
@@ -116,13 +121,15 @@ void set_remove(Set *set, int item) {
 	}
 }
 
-int set_contains(const Set *set, int item) {
+bool set_contains(const Set *set, int item) {
+	assert(set);
+
 	for (size_t i = 0; i < set->size; ++i) {
 		if (set->items[i] == item) {
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 #endif // SET_IMPLEMENTATION
