@@ -66,57 +66,52 @@ Usage:
 #define HMAP_H
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Forward declaration of the HashMapEntry structure
 typedef struct HashMapEntry HashMapEntry;
 
-// The structure for each entry in the hash map
 struct HashMapEntry {
 	char *key;
 	char *value;
 	HashMapEntry *next;
 };
 
-// The hash map structure
 typedef struct {
 	size_t bucket_count;
 	HashMapEntry **buckets;
 } HashMap;
 
-// Function prototypes
 HashMap *hmap_new(size_t initial_buckets);
 void hmap_free(HashMap *map);
-int hmap_insert(HashMap *map, const char *key, const char *value);
-int hmap_delete(HashMap *map, const char *key);
+bool hmap_insert(HashMap *map, const char *key, const char *value);
+bool hmap_delete(HashMap *map, const char *key);
 char *hmap_get(HashMap *map, const char *key);
 size_t hmap_hash(const char *key, size_t bucket_count);
 
 #ifdef HMAP_IMPLEMENTATION
 
-// Function implementations
+// Returns a map if created, null otherwise.
+// Assertion handles memory problems.
 HashMap *hmap_new(size_t initial_buckets) {
 	if (initial_buckets == 0) return NULL;
 
 	HashMap *map = (HashMap *)malloc(sizeof(HashMap));
-	if (!map) return NULL;
+	assert(map);
 
 	map->bucket_count = initial_buckets;
 	map->buckets = (HashMapEntry **)calloc(
 		initial_buckets,
 		sizeof(HashMapEntry *));
-	if (!map->buckets) {
-		free(map);
-		return NULL;
-	}
+	assert(map->buckets);
 
 	return map;
 }
 
 void hmap_free(HashMap *map) {
-	if (!map) return;
+	assert(map);
 
 	for (size_t i = 0; i < map->bucket_count; ++i) {
 		HashMapEntry *entry = map->buckets[i];
@@ -141,46 +136,45 @@ size_t hmap_hash(const char *key, size_t bucket_count) {
 	return hash % bucket_count;
 }
 
-// Returns 0 if insertion is successful, -1 otherwise.
-int hmap_insert(HashMap *map, const char *key, const char *value) {
-	if (!map || !key || !value) return -1;
+// Returns `true` if inserted, `false` otherwise.
+// Assertion handles memory problems.
+bool hmap_insert(HashMap *map, const char *key, const char *value) {
+	assert(map);
 
-	char *dup_key = strdup(key);
-	if (!dup_key) return -1;
-
-	char *dup_value = strdup(value);
-	if (!dup_value) { free(dup_key); return -1; }
+	char *dup_key = strdup(key), *dup_value = strdup(value);
+	assert(dup_key && dup_value);
 
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
 
-	// Check if the key already exists and update the value
+	// Check if the key already exists and update the value.
 	while (entry) {
 		if (strcmp(entry->key, dup_key) == 0) {
 			free(entry->key);
 			free(entry->value);
 			entry->key = dup_key;
 			entry->value = dup_value;
-			return 0;
+			return true;
 		}
 		entry = entry->next;
 	}
 
-	// Key does not exist, create a new entry
+	// Key does not exist, create a new entry.
 	HashMapEntry *new_entry = (HashMapEntry *)malloc(sizeof(HashMapEntry));
-	if (!new_entry) { free(dup_key); free(dup_value); return -1; }
+	assert(new_entry);
 
 	new_entry->key = dup_key;
 	new_entry->value = dup_value;
 	new_entry->next = map->buckets[index];
 	map->buckets[index] = new_entry;
 
-	return 0;
+	return false;
 }
 
-// Returns 0 if deletion is successful, -1 otherwise.
-int hmap_delete(HashMap *map, const char *key) {
-	if (!map || !key) return -1;
+// Returns `true` if deleted, `false` otherwise.
+// Assertion handles memory problems.
+bool hmap_delete(HashMap *map, const char *key) {
+	assert(map);
 
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
@@ -193,21 +187,24 @@ int hmap_delete(HashMap *map, const char *key) {
 			} else {
 				map->buckets[index] = entry->next;
 			}
+
 			free(entry->key);
 			free(entry->value);
 			free(entry);
-			return 0; // Entry is found and deleted using key.
+			return true;  // Entry is found and deleted using key.
 		}
+
 		prev = entry;
 		entry = entry->next;
 	}
 
-	return -1;
+	return false;
 }
 
-// Return string value if successful, NULL otherwise.
+// Returns a value if successful, null otherwise.
+// Assertion handles memory problems.
 char *hmap_get(HashMap *map, const char *key) {
-	if (!map || !key) return NULL;
+	assert(map);
 
 	size_t index = hmap_hash(key, map->bucket_count);
 	HashMapEntry *entry = map->buckets[index];
@@ -216,9 +213,10 @@ char *hmap_get(HashMap *map, const char *key) {
 		if (strcmp(entry->key, key) == 0) {
 			return entry->value;
 		}
+
 		entry = entry->next;
 	}
-	
+
 	return NULL;
 }
 
